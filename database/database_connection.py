@@ -1,13 +1,15 @@
 import sqlite3
 
 
-class Databse:
+class DatabaseConnection:
 
-    def __init__(self, filepath):
+    def __init__(self, filepath=None, table=None, columns=None):
         super().__init__()
 
         # Set filepath of database
         self.filepath = filepath
+        self.table = table
+        self.columns = columns
 
     def connect_to_database(self):
         # Create connection to database
@@ -16,7 +18,7 @@ class Databse:
         # Create cursor
         self.cur = self.con.cursor()
 
-    def insert_record(self, table, data):
+    def insert_record(self, data):
         # Connect the database
         self.connect_to_database()
 
@@ -25,11 +27,15 @@ class Databse:
         for i in data:
             value_markers.append("?")
 
+        markers = ", ".join(value_markers)
+        columns = ", ".join(self.columns)
+
         # Insert query
-        query = f"INSERT INTO {table} VALUES ({', '.join(value_markers)})"
+        query = f"INSERT INTO {self.table} ({columns}) VALUES ({markers})"
+        print(query)
 
         # Execute and commit the query
-        self.cur.executemany(query, data)
+        self.cur.execute(query, data)
         self.con.commit()
 
         # Close the database connection

@@ -1,3 +1,8 @@
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from PyQt5.QtWidgets import (
     QApplication,
     QWidget,
@@ -11,6 +16,8 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QRegExp
 from PyQt5.QtGui import QRegExpValidator
 
+from database.database_connection import DatabaseConnection
+
 
 class DialogWindow(QDialog):
     def __init__(self, title, description):
@@ -19,13 +26,26 @@ class DialogWindow(QDialog):
         self.window_title = title
         self.description = description
 
+        self.database = DatabaseConnection()
+        self.database.filepath = "/Users/chris/Documents/Projects/production_timesheets/database/time_sheets.db"
+        self.database.table = "cnc_process"
+        self.database.columns = ["process_name", "door_time", "frame_time"]
+
+        # Create list for line edits
+        self.line_edits = []
+
+        # Set window title
         self.setWindowTitle(self.window_title)
 
+        # Create layout of window
         self.create_layout()
 
-        self.create_line_edits("Process name:")
+        # Addd input fields
         self.create_line_edits("Door time:")
         self.create_line_edits("Frame time:")
+
+        # Submit button click
+        self.submit_button.clicked.connect(self.submit_data)
 
     def create_layout(self):
 
@@ -48,12 +68,17 @@ class DialogWindow(QDialog):
         description_label.setAlignment(Qt.AlignCenter)
         self.main_layout.addWidget(description_label)
 
+        # Add process name label
+        process_name = QLineEdit()
+        self.layout.addRow("Process name:", process_name)
+        self.line_edits.append(process_name)
+
         # Add main widget to main layout
         self.main_layout.addWidget(main_widget)
 
         # Add submit button
-        submit_button = QPushButton("Submit")
-        self.main_layout.addWidget(submit_button)
+        self.submit_button = QPushButton("Submit")
+        self.main_layout.addWidget(self.submit_button)
 
         # Set window layout
         self.setLayout(self.main_layout)
@@ -63,13 +88,30 @@ class DialogWindow(QDialog):
         # Create regex
         input_regex = QRegExp(r"^[0-9]+[.][0-9]+$")
 
+        # Create line edit
         line_edit = QLineEdit()
 
         # Create and set input validator
         input_validator = QRegExpValidator(input_regex, line_edit)
         line_edit.setValidator(input_validator)
 
+        # Add widget to FormLayout
         self.layout.addRow(label_name, line_edit)
+
+        # Add line widget to list of line edits
+        self.line_edits.append(line_edit)
+
+    def submit_data(self):
+        values = []
+        values.append(self.line_edits[0].text())
+        for line_edit in self.line_edits[1:]:
+            values.append(float(line_edit.text()))
+
+        try:
+            self.database.insert_record(values)
+            print(values)
+        except:
+            print("some error occured")
 
 
 app = QApplication([])
