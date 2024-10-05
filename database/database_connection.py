@@ -35,8 +35,12 @@ class DatabaseConnection:
         print(query)
 
         # Execute and commit the query
-        self.cur.execute(query, data)
-        self.con.commit()
+        try:
+            self.cur.execute(query, data)
+        except sqlite3.Error as e:
+            print(f"Some error occured {e}")
+        finally:
+            self.con.commit()
 
-        # Close the database connection
-        self.con.close()
+            # Close the database connection
+            self.con.close()

@@ -104,17 +104,20 @@ class DialogWindow(QDialog):
     def submit_data(self):
         # Create a list for vaues from the line edits
         values = []
+
         # Append the first line edit (always a string)
         values.append(self.line_edits[0].text())
+
         # Append the folat values for the rest of the line edits
         for line_edit in self.line_edits[1:]:
             values.append(float(line_edit.text()))
+
         # Insert the record into the database
-        try:
-            self.database.insert_record(values)
-            print(values)
-        except:
-            print("some error occured")
+        self.database.insert_record(values)
+
+        # Clear the line edit text values
+        for line_edit in self.line_edits:
+            line_edit.clear()
 
 
 app = QApplication([])
