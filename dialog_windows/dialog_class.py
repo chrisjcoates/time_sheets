@@ -102,11 +102,14 @@ class DialogWindow(QDialog):
         self.line_edits.append(line_edit)
 
     def submit_data(self):
+        # Create a list for vaues from the line edits
         values = []
+        # Append the first line edit (always a string)
         values.append(self.line_edits[0].text())
+        # Append the folat values for the rest of the line edits
         for line_edit in self.line_edits[1:]:
             values.append(float(line_edit.text()))
-
+        # Insert the record into the database
         try:
             self.database.insert_record(values)
             print(values)
